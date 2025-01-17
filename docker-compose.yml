@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  fastapi:
+    build:
+      context: .
+      dockerfile: docker/fastapi/Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - mongodb
+
+  celery:
+    build:
+      context: .
+      dockerfile: docker/celery/Dockerfile
+    depends_on:
+      - redis
+      - mongodb
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  mongodb:
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
