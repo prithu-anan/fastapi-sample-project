@@ -1,2 +1,4 @@
 .idea/
 .env
+mongo_data
+app/__pycache__/

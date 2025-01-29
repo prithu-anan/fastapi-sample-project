@@ -2,34 +2,56 @@ version: '3.8'
 
 services:
   fastapi:
-    build:
-      context: .
-      dockerfile: docker/fastapi/Dockerfile
+    image: prithuanan/fastapi-celery:latest
+    container_name: fastapi-service
     ports:
       - "8000:8000"
     depends_on:
       - redis
       - mongodb
+    environment:
+      - SERVICE=fastapi
+      - REDIS_URL=redis://redis:6379/0
+      - MONGODB_URL=mongodb://root:password@mongodb:27017
+    volumes:
+      - ./app:/app
+    networks:
+      - app-network
 
   celery:
-    build:
-      context: .
-      dockerfile: docker/celery/Dockerfile
+    image: prithuanan/fastapi-celery:latest
+    container_name: celery-worker
     depends_on:
       - redis
       - mongodb
+    environment:
+      - SERVICE=celery
+      - REDIS_URL=redis://redis:6379/0
+      - MONGODB_URL=mongodb://root:password@mongodb:27017
+    volumes:
+      - ./app:/app
+    networks:
+      - app-network
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
+    container_name: redis-service
+    networks:
+      - app-network
 
   mongodb:
     image: mongo:6.0
-    ports:
-      - "27017:27017"
+    container_name: mongodb-service
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=password
     volumes:
-      - mongo_data:/data/db
+      - ./mongo_data:/data/db
+    networks:
+      - app-network
 
 volumes:
   mongo_data:
+
+networks:
+  app-network:
